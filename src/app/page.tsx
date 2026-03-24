@@ -7,6 +7,7 @@ import CategorySelector from '@/components/CategorySelector';
 import PromptForm from '@/components/PromptForm';
 import PromptResult from '@/components/PromptResult';
 import History from '@/components/History';
+import Toast from '@/components/Toast';
 
 const HISTORY_KEY = 'promptlab_history';
 
@@ -16,6 +17,8 @@ export default function Home() {
   const [currentDescription, setCurrentDescription] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(HISTORY_KEY);
@@ -23,6 +26,11 @@ export default function Home() {
       setHistory(JSON.parse(saved));
     }
   }, []);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const saveToHistory = (item: Omit<HistoryItem, 'id' | 'timestamp'>) => {
     const newItem: HistoryItem = {
@@ -51,6 +59,8 @@ export default function Home() {
       saveToHistory({ category: selectedCategory, description, prompt: data.prompt });
     } catch (error) {
       console.error('Error:', error);
+      setError('Error al generar el prompt. Por favor intenta de nuevo.');
+      showToast('Error al generar el prompt', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +86,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-4xl mx-auto">
+      {toast && <Toast message={toast.message} type={toast.type} />}
+      
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400" role="alert">
+          <p className="font-medium">{error}</p>
+        </div>
+      )}
+      
       <header className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-bold mb-2">
           <span className="text-cyan-400">Prompt</span>Lab
