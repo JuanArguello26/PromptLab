@@ -59,10 +59,10 @@ export default function CategorySelector({ categories, selectedCategory, onSelec
             aria-checked={isSelected}
             aria-pressed={isSelected}
             tabIndex={isSelected ? 0 : -1}
-            className={`p-4 rounded-xl border transition-all duration-200 text-left ${
+            className={`category-card glass-card p-4 rounded-xl border transition-all duration-300 text-left ${
               isSelected
-                ? 'border-cyan-400 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,0.3)]'
-                : 'border-[#1f1f2e] bg-[#111118] hover:border-[#2a2a3e] hover:bg-[#161620]'
+                ? 'selected'
+                : 'border-white/5 hover:border-white/20'
             }`}
           >
             <span className="text-3xl mb-2 block" aria-hidden="true">{category.icon}</span>

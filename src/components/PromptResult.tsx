@@ -50,17 +50,17 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-[#111118] border border-[#1f1f2e] rounded-xl">
-        <pre className="whitespace-pre-wrap text-gray-300 text-sm font-mono">{prompt}</pre>
+      <div className="glass-card p-6 rounded-xl animate-fade-in-up">
+        <pre className="whitespace-pre-wrap text-gray-300 text-sm font-mono leading-relaxed">{prompt}</pre>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         <button
           onClick={handleCopy}
-          className="flex-1 min-w-[120px] py-2 px-4 bg-[#1f1f2e] text-white rounded-xl hover:bg-[#2a2a3e] transition-all flex items-center justify-center gap-2"
+          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
         >
           {copied ? (
             <>
-              <span>✓</span> Copiado
+              <span className="text-green-400">✓</span> Copiado
             </>
           ) : (
             <>
@@ -71,7 +71,7 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
         <button
           onClick={onRegenerate}
           disabled={isLoading}
-          className="flex-1 min-w-[120px] py-2 px-4 bg-[#1f1f2e] text-white rounded-xl hover:bg-[#2a2a3e] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
@@ -89,19 +89,23 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
         </button>
         <button
           onClick={onToggleFavorite}
-          className={`py-2 px-4 rounded-xl transition-all flex items-center justify-center gap-2 ${isFavorite ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' : 'bg-[#1f1f2e] text-white hover:bg-[#2a2a3e]'}`}
+          className={`py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 hover:scale-105 ${
+            isFavorite 
+              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' 
+              : 'glass-card text-white'
+          }`}
         >
-          <span>{isFavorite ? '⭐' : '☆'}</span>
+          <span className="text-lg">{isFavorite ? '⭐' : '☆'}</span>
         </button>
         <button
           onClick={handleExportTxt}
-          className="py-2 px-4 bg-[#1f1f2e] text-white rounded-xl hover:bg-[#2a2a3e] transition-all flex items-center justify-center gap-2"
+          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
         >
           <span>📄</span> TXT
         </button>
         <button
           onClick={handleExportPdf}
-          className="py-2 px-4 bg-[#1f1f2e] text-white rounded-xl hover:bg-[#2a2a3e] transition-all flex items-center justify-center gap-2"
+          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
         >
           <span>📑</span> PDF
         </button>

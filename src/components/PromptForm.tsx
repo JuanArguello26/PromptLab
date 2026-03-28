@@ -28,7 +28,9 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setDescription(e.target.value);
+    const value = e.target.value;
+    if (value.length > 500) return;
+    setDescription(value);
     if (error) setError('');
   };
 
@@ -46,7 +48,7 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
           disabled={disabled}
           aria-describedby={error ? 'description-error' : undefined}
           aria-invalid={!!error}
-          className="w-full h-32 p-4 bg-[#111118] border border-[#1f1f2e] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400/50 resize-none disabled:opacity-50 transition-colors"
+          className="w-full h-32 p-4 glass border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none resize-none disabled:opacity-50 transition-all input-glow"
         />
         <div className="flex justify-between items-center mt-2">
           {error ? (
@@ -54,7 +56,7 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
               {error}
             </p>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className={`text-sm ${description.length > 450 ? 'text-yellow-400' : 'text-gray-500'}`}>
               {description.length}/500 caracteres
             </p>
           )}
@@ -63,7 +65,7 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
       <button
         type="submit"
         disabled={!description.trim() || isLoading || disabled}
-        className="w-full py-3 px-6 bg-cyan-400 text-black font-semibold rounded-xl hover:bg-cyan-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-[#0a0a0f]"
+        className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 btn-primary"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
@@ -74,7 +76,12 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
             Generando...
           </span>
         ) : (
-          'Generar Prompt'
+          <span className="flex items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Generar Prompt
+          </span>
         )}
       </button>
     </form>

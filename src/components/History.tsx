@@ -12,15 +12,18 @@ export default function History({ history, onSelect }: HistoryProps) {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm text-gray-400 mb-2">Historial reciente</h3>
-      {history.slice(0, 5).map((item) => (
+      <h3 className="text-sm text-gray-400 mb-2 flex items-center gap-2">
+        <span>📜</span> Historial reciente
+      </h3>
+      {history.slice(0, 5).map((item, index) => (
         <button
           key={item.id}
           onClick={() => onSelect(item)}
-          className="w-full p-3 bg-[#111118] border border-[#1f1f2e] rounded-lg text-left hover:border-[#2a2a3e] transition-all"
+          className="w-full p-4 glass-card rounded-lg text-left hover:scale-[1.01] transition-all animate-fade-in-up"
+          style={{ animationDelay: `${index * 0.1}s` }}
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs px-2 py-0.5 bg-[#1f1f2e] rounded text-gray-400">
+            <span className="text-xs px-2 py-0.5 bg-white/5 rounded text-gray-400">
               {item.category}
             </span>
             <span className="text-xs text-gray-500">

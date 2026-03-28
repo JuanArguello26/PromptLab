@@ -6,8 +6,18 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        accent: 'var(--accent)',
+        'accent-dim': 'var(--accent-dim)',
+        card: 'var(--card)',
+        'card-border': 'var(--card-border)',
+      },
+    },
   },
   plugins: [],
 }

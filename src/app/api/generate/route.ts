@@ -21,7 +21,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = await generatePrompt(categoryData.systemPrompt, description, apiKey);
+    const finalApiKey = apiKey || process.env.GROQ_API_KEY;
+    if (!finalApiKey) {
+      return NextResponse.json(
+        { error: 'API key not configured. Please add your Groq API key in settings.' },
+        { status: 401 }
+      );
+    }
+
+    const prompt = await generatePrompt(categoryData.systemPrompt, description, finalApiKey);
     return NextResponse.json({ prompt });
   } catch (error) {
     console.error('Generate error:', error);
