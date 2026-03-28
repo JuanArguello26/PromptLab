@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { categories, getCategoryById } from '@/lib/prompts';
 import { HistoryItem } from '@/types';
 import CategorySelector from '@/components/CategorySelector';
@@ -41,37 +41,39 @@ export default function Home() {
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const bgRef = useRef<HTMLDivElement>(null);
 
   const isPro = user?.plan === 'pro';
   const remainingFree = Math.max(0, FREE_PROMPTS_LIMIT - stats.total);
   const isLimitReached = !isPro && stats.total >= FREE_PROMPTS_LIMIT;
 
   useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      setMousePosition({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  useEffect(() => {
     const savedHistory = localStorage.getItem(HISTORY_KEY);
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
+    if (savedHistory) setHistory(JSON.parse(savedHistory));
     const savedFavorites = localStorage.getItem(FAVORITES_KEY);
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
+    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
     const savedStats = localStorage.getItem(STATS_KEY);
-    if (savedStats) {
-      setStats(JSON.parse(savedStats));
-    }
+    if (savedStats) setStats(JSON.parse(savedStats));
     const savedTheme = localStorage.getItem('promptlab_theme');
     if (savedTheme) {
       setTheme(savedTheme as 'dark' | 'light');
       document.documentElement.classList.toggle('light', savedTheme === 'light');
     }
     const savedApiKey = localStorage.getItem('promptlab_custom_api_key');
-    if (savedApiKey) {
-      setCustomApiKey(savedApiKey);
-    }
+    if (savedApiKey) setCustomApiKey(savedApiKey);
     const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
   useEffect(() => {
@@ -137,13 +139,11 @@ export default function Home() {
 
   const handleSubmit = async (description: string, promptId?: string) => {
     if (!selectedCategory) return;
-
     if (isLimitReached && !isPro) {
       setShowAuth(true);
       showToast('Has alcanzado el límite de prompts gratuitos', 'error');
       return;
     }
-
     setCurrentDescription(description);
     setIsLoading(true);
     setIsFavorite(false);
@@ -166,11 +166,7 @@ export default function Home() {
       }
       
       setGeneratedPrompt(data.prompt);
-      const newItem = {
-        category: selectedCategory,
-        description,
-        prompt: data.prompt
-      };
+      const newItem = { category: selectedCategory, description, prompt: data.prompt };
       const newItemWithId: HistoryItem = {
         ...newItem,
         id: promptId || crypto.randomUUID(),
@@ -196,11 +192,7 @@ export default function Home() {
     }
   };
 
-  const handleRegenerate = async () => {
-    if (currentDescription) {
-      await handleSubmit(currentDescription);
-    }
-  };
+  const handleRegenerate = () => currentDescription && handleSubmit(currentDescription);
 
   const handleHistorySelect = (item: HistoryItem) => {
     setSelectedCategory(item.category);
@@ -220,11 +212,34 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative">
-      <div className="animated-bg">
-        <div className="floating-orb orb-1" />
-        <div className="floating-orb orb-2" />
-        <div className="floating-orb orb-3" />
-        <div className="grid-pattern" />
+      <div ref={bgRef} className="antigravity-bg">
+        <div 
+          className="antigravity-layer layer-1"
+          style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
+        />
+        <div 
+          className="antigravity-layer layer-2"
+          style={{ transform: `translate(${mousePosition.x * -20}px, ${mousePosition.y * -20}px)` }}
+        />
+        <div className="antigravity-layer layer-3" />
+        <div className="grid-overlay" />
+        <div 
+          className="floating-particle particle-1 animate-float"
+          style={{ transform: `translate(${mousePosition.x * -40}px, ${mousePosition.y * -40}px)` }}
+        />
+        <div 
+          className="floating-particle particle-2 animate-float-delayed"
+          style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
+        />
+        <div 
+          className="floating-particle particle-3 animate-float"
+          style={{ transform: `translate(${mousePosition.x * -15}px, ${mousePosition.y * -15}px)` }}
+        />
+        <div 
+          className="floating-particle particle-4 animate-float-delayed"
+          style={{ transform: `translate(${mousePosition.x * 25}px, ${mousePosition.y * 25}px)` }}
+        />
+        <div className="hero-glow" />
       </div>
 
       <div className="relative z-10 p-4 md:p-8 max-w-4xl mx-auto">
@@ -259,7 +274,6 @@ export default function Home() {
               <button
                 onClick={() => setShowAuth(true)}
                 className="glass-card rounded-xl px-3 py-2 flex items-center gap-2 animate-fade-in-up"
-                title="Mejorar a PRO"
               >
                 <div className="relative w-8 h-8">
                   <svg className="w-8 h-8 transform -rotate-90">
@@ -270,38 +284,36 @@ export default function Home() {
                       className="text-cyan-400 usage-ring"
                     />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
-                    {remainingFree}
-                  </span>
+                  <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">{remainingFree}</span>
                 </div>
-                <span className="text-xs text-gray-400 hidden md:block">gratis</span>
               </button>
             )}
             
             <button
               onClick={() => setShowFavorites(!showFavorites)}
-              className="glass-card p-2 hover:scale-110 transition-all"
-              title="Favoritos"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn"
             >
               <span className="text-lg">⭐</span>
             </button>
             <button
               onClick={handleThemeToggle}
-              className="glass-card p-2 hover:scale-110 transition-all"
-              title="Cambiar tema"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn"
             >
               <span className="text-lg">{theme === 'dark' ? '☀️' : '🌙'}</span>
             </button>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="glass-card p-2 hover:scale-110 transition-all"
-              title="Configuración"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn"
             >
               <span className="text-lg">⚙️</span>
             </button>
           </div>
 
-          <div className="pt-12 md:pt-0">
+          <div className="pt-16 md:pt-8">
+            <div className="logo-container mb-4">
+              <div className="logo-glow" />
+              <img src="/logo.png" alt="PromptLab" className="logo-img h-24 mx-auto" />
+            </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2 animate-fade-in-up">
               <span className="gradient-text">Prompt</span>Lab
             </h1>
@@ -318,7 +330,7 @@ export default function Home() {
         </header>
 
         {generatedPrompt ? (
-          <div className="space-y-6 animate-fade-in-up">
+          <div className="space-y-6 prompt-result-enter">
             <button
               onClick={handleNewGeneration}
               className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2 group"
@@ -396,10 +408,7 @@ export default function Home() {
                   {favorites.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => {
-                        handleHistorySelect(item);
-                        setShowFavorites(false);
-                      }}
+                      onClick={() => { handleHistorySelect(item); setShowFavorites(false); }}
                       className="w-full p-3 glass-card rounded-lg text-left hover:scale-[1.02] transition-all"
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -433,7 +442,6 @@ export default function Home() {
                     placeholder="gsk_..."
                     className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none input-glow"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Usa tu propia API key para evitar límites</p>
                 </div>
                 <button
                   onClick={handleSaveApiKey}
