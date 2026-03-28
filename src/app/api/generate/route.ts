@@ -4,7 +4,7 @@ import { getCategoryById } from '@/lib/prompts';
 
 export async function POST(request: NextRequest) {
   try {
-    const { category, description } = await request.json();
+    const { category, description, apiKey } = await request.json();
 
     if (!category || !description) {
       return NextResponse.json(
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = await generatePrompt(categoryData.systemPrompt, description);
+    const prompt = await generatePrompt(categoryData.systemPrompt, description, apiKey);
     return NextResponse.json({ prompt });
   } catch (error) {
     console.error('Generate error:', error);

@@ -12,6 +12,7 @@ export interface HistoryItem {
   description: string;
   prompt: string;
   timestamp: number;
+  isFavorite?: boolean;
 }
 
 export interface GenerateRequest {
