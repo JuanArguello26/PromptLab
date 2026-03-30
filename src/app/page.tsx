@@ -1,6 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+
+function throttle<T extends (...args: never[]) => void>(fn: T, delay: number): T {
+  let lastCall = 0;
+  return ((...args: Parameters<T>) => {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    }
+  }) as T;
+}
 import { categories, getCategoryById } from '@/lib/prompts';
 import { HistoryItem } from '@/types';
 import CategorySelector from '@/components/CategorySelector';
@@ -29,17 +40,39 @@ export default function Home() {
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [favorites, setFavorites] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const saved = localStorage.getItem(HISTORY_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [favorites, setFavorites] = useState<HistoryItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const saved = localStorage.getItem(FAVORITES_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showFavorites, setShowFavorites] = useState(false);
-  const [stats, setStats] = useState({ total: 0, favorites: 0 });
+  const [stats, setStats] = useState(() => {
+    if (typeof window === 'undefined') return { total: 0, favorites: 0 };
+    const saved = localStorage.getItem(STATS_KEY);
+    return saved ? JSON.parse(saved) : { total: 0, favorites: 0 };
+  });
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [customApiKey, setCustomApiKey] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('promptlab_custom_api_key') || '';
+  });
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window === 'undefined') return 'dark';
+    return (localStorage.getItem('promptlab_theme') as 'dark' | 'light') || 'dark';
+  });
   const [showAuth, setShowAuth] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem(USER_KEY);
+    return saved ? JSON.parse(saved) : null;
+  });
   const [showWelcome, setShowWelcome] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const bgRef = useRef<HTMLDivElement>(null);
@@ -48,33 +81,23 @@ export default function Home() {
   const remainingFree = Math.max(0, FREE_PROMPTS_LIMIT - stats.total);
   const isLimitReached = !isPro && stats.total >= FREE_PROMPTS_LIMIT;
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useMemo(
+    () => throttle((e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
       setMousePosition({ x, y });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    }, 16),
+    []
+  );
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem(HISTORY_KEY);
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
-    const savedFavorites = localStorage.getItem(FAVORITES_KEY);
-    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
-    const savedStats = localStorage.getItem(STATS_KEY);
-    if (savedStats) setStats(JSON.parse(savedStats));
-    const savedTheme = localStorage.getItem('promptlab_theme');
-    if (savedTheme) {
-      setTheme(savedTheme as 'dark' | 'light');
-      document.documentElement.classList.toggle('light', savedTheme === 'light');
-    }
-    const savedApiKey = localStorage.getItem('promptlab_custom_api_key');
-    if (savedApiKey) setCustomApiKey(savedApiKey);
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light');
+  }, [theme]);
 
   useEffect(() => {
     if (user && !localStorage.getItem('promptlab_welcomed')) {
@@ -114,7 +137,6 @@ export default function Home() {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     localStorage.setItem('promptlab_theme', newTheme);
-    document.documentElement.classList.toggle('light', newTheme === 'light');
   };
 
   const handleSaveApiKey = () => {
@@ -192,7 +214,7 @@ export default function Home() {
     }
   };
 
-  const handleRegenerate = () => currentDescription && handleSubmit(currentDescription);
+  const handleRegenerate = () => currentDescription && handleSubmit(currentDescription, currentPromptId || undefined);
 
   const handleHistorySelect = (item: HistoryItem) => {
     setSelectedCategory(item.category);
