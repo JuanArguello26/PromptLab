@@ -53,8 +53,10 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mouseTrail, setMouseTrail] = useState<{ id: number; x: number; y: number }[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   const bgRef = useRef<HTMLDivElement>(null);
+  const trailIdRef = useRef(0);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -78,6 +80,15 @@ export default function Home() {
       const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
       setMousePosition({ x, y });
+      
+      if (Math.random() > 0.7) {
+        const newParticle = {
+          id: trailIdRef.current++,
+          x: e.clientX,
+          y: e.clientY,
+        };
+        setMouseTrail(prev => [...prev.slice(-20), newParticle]);
+      }
     }, 16),
     []
   );
@@ -86,6 +97,15 @@ export default function Home() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [handleMouseMove]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (mouseTrail.length > 0) {
+        setMouseTrail(prev => prev.slice(1));
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [mouseTrail.length]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light');
@@ -253,6 +273,16 @@ export default function Home() {
           className="floating-particle particle-4 animate-float-delayed"
           style={{ transform: `translate(${mousePosition.x * 25}px, ${mousePosition.y * 25}px)` }}
         />
+        {mouseTrail.map((particle) => (
+          <div
+            key={particle.id}
+            className="mouse-trail"
+            style={{
+              left: particle.x,
+              top: particle.y,
+            }}
+          />
+        ))}
         <div className="hero-glow" />
       </div>
 
