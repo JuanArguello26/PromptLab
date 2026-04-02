@@ -8,9 +8,10 @@ interface PromptResultProps {
   isLoading: boolean;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  onError?: (message: string) => void;
 }
 
-export default function PromptResult({ prompt, onRegenerate, isLoading, isFavorite, onToggleFavorite }: PromptResultProps) {
+export default function PromptResult({ prompt, onRegenerate, isLoading, isFavorite, onToggleFavorite, onError }: PromptResultProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -30,8 +31,12 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
   };
 
   const handleExportPdf = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
+    try {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        onError?.('Por favor permite las ventanas emergentes');
+        return;
+      }
       printWindow.document.write(`
         <html>
           <head>
@@ -45,6 +50,8 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
       `);
       printWindow.document.close();
       printWindow.print();
+    } catch (err) {
+      onError?.('Error al exportar PDF');
     }
   };
 

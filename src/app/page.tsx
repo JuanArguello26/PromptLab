@@ -40,42 +40,34 @@ export default function Home() {
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const saved = localStorage.getItem(HISTORY_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [favorites, setFavorites] = useState<HistoryItem[]>(() => {
-    if (typeof window === 'undefined') return [];
-    const saved = localStorage.getItem(FAVORITES_KEY);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [favorites, setFavorites] = useState<HistoryItem[]>([]);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [stats, setStats] = useState(() => {
-    if (typeof window === 'undefined') return { total: 0, favorites: 0 };
-    const saved = localStorage.getItem(STATS_KEY);
-    return saved ? JSON.parse(saved) : { total: 0, favorites: 0 };
-  });
+  const [stats, setStats] = useState({ total: 0, favorites: 0 });
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState(() => {
-    if (typeof window === 'undefined') return '';
-    return localStorage.getItem('promptlab_custom_api_key') || '';
-  });
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    return (localStorage.getItem('promptlab_theme') as 'dark' | 'light') || 'dark';
-  });
+  const [customApiKey, setCustomApiKey] = useState('');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [showAuth, setShowAuth] = useState(false);
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const saved = localStorage.getItem(USER_KEY);
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHydrated, setIsHydrated] = useState(false);
   const bgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsHydrated(true);
+    setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
+    setFavorites(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
+    const savedStats = localStorage.getItem(STATS_KEY);
+    setStats(savedStats ? JSON.parse(savedStats) : { total: 0, favorites: 0 });
+    setCustomApiKey(localStorage.getItem('promptlab_custom_api_key') || '');
+    const savedTheme = localStorage.getItem('promptlab_theme');
+    setTheme((savedTheme as 'dark' | 'light') || 'dark');
+    const savedUser = localStorage.getItem(USER_KEY);
+    if (savedUser) setUser(JSON.parse(savedUser));
+  }, []);
 
   const isPro = user?.plan === 'pro';
   const remainingFree = Math.max(0, FREE_PROMPTS_LIMIT - stats.total);
@@ -275,7 +267,7 @@ export default function Home() {
         
         <header className="text-center mb-8 relative">
           <div className="absolute top-0 right-0 flex gap-2 items-start">
-            {user && (
+            {isHydrated && user && (
               <div className="glass-card rounded-xl px-3 py-2 flex items-center gap-2 animate-fade-in-up">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
                   {user.name.charAt(0).toUpperCase()}
@@ -292,7 +284,7 @@ export default function Home() {
               </div>
             )}
             
-            {!isPro && stats.total > 0 && (
+            {isHydrated && !isPro && stats.total > 0 && (
               <button
                 onClick={() => setShowAuth(true)}
                 className="glass-card rounded-xl px-3 py-2 flex items-center gap-2 animate-fade-in-up"
@@ -365,6 +357,7 @@ export default function Home() {
               isLoading={isLoading}
               isFavorite={isFavorite}
               onToggleFavorite={toggleFavorite}
+              onError={(msg) => showToast(msg, 'error')}
             />
           </div>
         ) : (
@@ -498,7 +491,7 @@ export default function Home() {
         remainingFree={remainingFree}
       />
 
-      {showWelcome && user && (
+      {isHydrated && showWelcome && user && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-in-right">
           <div className="glass-card rounded-2xl px-6 py-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center">

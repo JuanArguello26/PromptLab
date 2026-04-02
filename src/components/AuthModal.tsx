@@ -60,6 +60,18 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
     }, 1000);
   };
 
+  const handleDemo = (plan: 'free' | 'pro') => {
+    setIsLoading(true);
+    setTimeout(() => {
+      onLogin({
+        name: plan === 'pro' ? 'Usuario Demo PRO' : 'Usuario Demo',
+        email: plan === 'pro' ? 'demo@promptlab.app' : 'demo-free@promptlab.app',
+        plan
+      });
+      setIsLoading(false);
+    }, 800);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
@@ -137,6 +149,23 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
               </svg>
               Continuar con GitHub
             </button>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleDemo('free')}
+                disabled={isLoading}
+                className="flex-1 py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-300 text-sm transition-all"
+              >
+                Demo Gratis
+              </button>
+              <button
+                onClick={() => handleDemo('pro')}
+                disabled={isLoading}
+                className="flex-1 py-2 px-3 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 hover:from-cyan-500/30 hover:to-purple-500/30 border border-white/10 rounded-lg text-white text-sm font-medium transition-all"
+              >
+                Demo PRO
+              </button>
+            </div>
           </div>
 
           <div className="relative mb-6">

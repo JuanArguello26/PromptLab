@@ -57,7 +57,6 @@ export default function CategorySelector({ categories, selectedCategory, onSelec
             onKeyDown={(e) => handleKeyDown(e, index)}
             role="radio"
             aria-checked={isSelected}
-            aria-pressed={isSelected}
             tabIndex={isSelected ? 0 : -1}
             className={`category-card glass-card p-4 rounded-xl border transition-all duration-300 text-left ${
               isSelected
