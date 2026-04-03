@@ -33,6 +33,7 @@ interface User {
   name: string;
   email: string;
   plan: 'free' | 'pro';
+  demoExpiresAt?: number;
 }
 
 export default function Home() {
@@ -82,7 +83,16 @@ export default function Home() {
         }));
       } else {
         const savedUser = localStorage.getItem(USER_KEY);
-        if (savedUser) setUser(JSON.parse(savedUser));
+        if (savedUser) {
+          const parsedUser = JSON.parse(savedUser);
+          if (parsedUser.demoExpiresAt && Date.now() > parsedUser.demoExpiresAt) {
+            const expiredUser = { ...parsedUser, plan: 'free' as const, demoExpiresAt: undefined };
+            localStorage.setItem(USER_KEY, JSON.stringify(expiredUser));
+            setUser(expiredUser);
+          } else {
+            setUser(parsedUser);
+          }
+        }
       }
 
       setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
@@ -114,8 +124,10 @@ export default function Home() {
   }, [supabase]);
 
   const isPro = user?.plan === 'pro';
+
+  const effectiveIsPro = user?.plan === 'pro' && (!user?.demoExpiresAt || Date.now() < user.demoExpiresAt);
   const remainingFree = Math.max(0, FREE_PROMPTS_LIMIT - stats.total);
-  const isLimitReached = !isPro && stats.total >= FREE_PROMPTS_LIMIT;
+  const isLimitReached = !effectiveIsPro && stats.total >= FREE_PROMPTS_LIMIT;
 
   const handleMouseMove = useMemo(
     () => throttle((e: MouseEvent) => {
@@ -216,7 +228,7 @@ export default function Home() {
 
   const handleSubmit = async (description: string, promptId?: string) => {
     if (!selectedCategory) return;
-    if (isLimitReached && !isPro) {
+    if (isLimitReached && !effectiveIsPro) {
       setShowAuth(true);
       showToast('Has alcanzado el límite de prompts gratuitos', 'error');
       return;
@@ -267,7 +279,7 @@ export default function Home() {
         });
       }
 
-      if (!isPro && newStats.total >= FREE_PROMPTS_LIMIT - 2) {
+      if (!effectiveIsPro && newStats.total >= FREE_PROMPTS_LIMIT - 2) {
         showToast(`Solo te quedan ${FREE_PROMPTS_LIMIT - newStats.total} prompts gratuitos`, 'info');
       }
     } catch (error) {
@@ -343,7 +355,12 @@ export default function Home() {
                 </div>
                 <div className="text-left">
                   <p className="text-white text-xs font-medium">{user.name}</p>
-                  <p className="text-cyan-400 text-[10px]">{user.plan === 'pro' ? 'PRO' : 'Gratis'}</p>
+                  <p className="text-cyan-400 text-[10px]">{user.plan === 'pro' ? (user.demoExpiresAt ? 'DEMO' : 'PRO') : 'Gratis'}</p>
+                  {user.demoExpiresAt && (
+                    <p className="text-orange-400 text-[10px]">
+                      ⏱️ {Math.max(0, Math.floor((user.demoExpiresAt - Date.now()) / (1000 * 60 * 60)))}h restantes
+                    </p>
+                  )}
                 </div>
                 <button onClick={handleLogout} className="ml-1 text-gray-400 hover:text-red-400 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,7 +370,7 @@ export default function Home() {
               </div>
             )}
             
-            {isHydrated && !isPro && stats.total > 0 && (
+            {isHydrated && !effectiveIsPro && stats.total > 0 && (
               <button
                 onClick={() => setShowAuth(true)}
                 className="glass-card rounded-xl px-3 py-2 flex items-center gap-2 animate-fade-in-up"
@@ -403,9 +420,9 @@ export default function Home() {
             <p className="text-gray-400 animate-fade-in-up stagger-1">Genera prompts profesionales para IA</p>
             <div className="flex items-center justify-center gap-4 mt-4 animate-fade-in-up stagger-2">
               <span className="text-sm text-gray-500 animate-pulse">📊 {stats.total} generados</span>
-              {isPro && (
+              {effectiveIsPro && (
                 <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-xs font-bold text-white animate-breathe">
-                  PRO
+                  {user?.demoExpiresAt ? 'DEMO' : 'PRO'}
                 </span>
               )}
             </div>
@@ -567,7 +584,7 @@ export default function Home() {
               <span className="text-2xl">🎉</span>
             </div>
             <div>
-              <p className="text-white font-medium">¡Bienvenido{user.plan === 'pro' ? ', PRO!' : '!'}</p>
+              <p className="text-white font-medium">¡Bienvenido{user.plan === 'pro' ? (user.demoExpiresAt ? ', DEMO!' : ', PRO!') : '!'}</p>
               <p className="text-gray-400 text-sm">{user.name}</p>
             </div>
           </div>

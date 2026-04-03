@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (user: { name: string; email: string; plan: 'free' | 'pro'; id?: string }) => void;
+  onLogin: (user: { name: string; email: string; plan: 'free' | 'pro'; id?: string; demoExpiresAt?: number }) => void;
   isLimitReached: boolean;
   remainingFree: number;
 }
@@ -148,15 +148,32 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
 
   const handleDemo = (plan: 'free' | 'pro') => {
     setIsLoading(true);
-    setTimeout(() => {
-      onLogin({
-        name: plan === 'pro' ? 'Usuario Demo PRO' : 'Usuario Demo',
-        email: plan === 'pro' ? 'demo@promptlab.app' : 'demo-free@promptlab.app',
-        plan
-      });
-      setIsLoading(false);
-      onClose();
-    }, 800);
+    
+    if (plan === 'pro') {
+      const demoExpiration = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem('promptlab_demo_expires', demoExpiration.toString());
+      
+      setTimeout(() => {
+        onLogin({
+          name: 'Usuario Demo PRO',
+          email: 'demo@promptlab.app',
+          plan: 'pro',
+          demoExpiresAt: demoExpiration
+        });
+        setIsLoading(false);
+        onClose();
+      }, 800);
+    } else {
+      setTimeout(() => {
+        onLogin({
+          name: 'Usuario Demo',
+          email: 'demo-free@promptlab.app',
+          plan: 'free'
+        });
+        setIsLoading(false);
+        onClose();
+      }, 800);
+    }
   };
 
   return (
