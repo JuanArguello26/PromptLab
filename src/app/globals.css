@@ -30,117 +30,106 @@ body {
   transition: background 0.3s, color 0.3s;
   overflow-x: hidden;
   cursor: default;
+  min-height: 100vh;
 }
 
-.antigravity-bg {
+.bg-container {
   position: fixed;
   inset: 0;
-  overflow: hidden;
-  pointer-events: none;
   z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0a0f 0%, #0f0f1a 50%, #0a0a0f 100%);
 }
 
-.antigravity-layer {
+.light .bg-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+}
+
+.bg-glow {
   position: absolute;
-  inset: -20%;
-  width: 140%;
-  height: 140%;
-  will-change: transform;
-  transition: transform 0.1s ease-out;
+  width: 800px;
+  height: 800px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  transition: transform 0.15s ease-out;
+  pointer-events: none;
 }
 
-.layer-1 {
-  background: 
-    radial-gradient(ellipse 100% 80% at 30% 30%, rgba(34, 211, 238, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 80% 60% at 70% 70%, rgba(168, 85, 247, 0.2) 0%, transparent 50%);
+.bg-glow-1 {
+  top: -200px;
+  left: -200px;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.4) 0%, transparent 70%);
 }
 
-.layer-2 {
-  background: 
-    radial-gradient(ellipse 100% 100% at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 20% 80%, rgba(34, 211, 238, 0.12) 0%, transparent 35%);
+.light .bg-glow-1 {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%);
 }
 
-.layer-3 {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+.bg-glow-2 {
+  bottom: -200px;
+  right: -200px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, transparent 70%);
 }
 
-.grid-overlay {
+.light .bg-glow-2 {
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.25) 0%, transparent 70%);
+}
+
+.bg-glow-3 {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 60%);
+}
+
+.light .bg-glow-3 {
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 60%);
+}
+
+.bg-grid {
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at center, black 10%, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 10%, transparent 70%);
+    linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
 }
 
-.floating-particle {
+.bg-particles {
   position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  will-change: transform;
+  inset: 0;
 }
 
-.particle-1 {
-  width: 400px;
-  height: 400px;
-  top: -5%;
-  right: -10%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, transparent 60%);
-  filter: blur(80px);
-}
-
-.particle-2 {
-  width: 350px;
-  height: 350px;
-  bottom: -10%;
-  left: -10%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 60%);
-  filter: blur(70px);
-}
-
-.particle-3 {
-  width: 250px;
-  height: 250px;
-  top: 30%;
-  left: 30%;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.15) 0%, transparent 60%);
-  filter: blur(50px);
-}
-
-.particle-4 {
-  width: 200px;
-  height: 200px;
-  bottom: 40%;
-  right: 20%;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 60%);
-  filter: blur(40px);
-}
-
-.mouse-particle {
+.particle-dot {
   position: absolute;
   width: 4px;
   height: 4px;
-  background: rgba(34, 211, 238, 0.8);
+  background: rgba(34, 211, 238, 0.6);
   border-radius: 50%;
-  pointer-events: none;
-  will-change: transform, opacity;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
 }
 
-.mouse-trail {
+.particle-dot:nth-child(odd) {
+  background: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
+.bg-trail {
   position: absolute;
   width: 6px;
   height: 6px;
-  background: rgba(168, 85, 247, 0.6);
+  background: rgba(34, 211, 238, 0.7);
   border-radius: 50%;
   pointer-events: none;
-  animation: particleFade 1.5s ease-out forwards;
+  animation: trailFade 0.8s ease-out forwards;
 }
 
-@keyframes particleFade {
+@keyframes trailFade {
   0% { transform: scale(1); opacity: 0.8; }
   100% { transform: scale(0); opacity: 0; }
 }
@@ -175,6 +164,12 @@ body {
   border-color: rgba(34, 211, 238, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(34, 211, 238, 0.1);
+}
+
+.light .glass-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(6, 182, 212, 0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 30px rgba(6, 182, 212, 0.15);
 }
 
 @keyframes float {
@@ -226,10 +221,54 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.3), 0 0 40px rgba(34, 211, 238, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.5), 0 0 60px rgba(34, 211, 238, 0.2); }
+}
+
+@keyframes border-dance {
+  0%, 100% { border-color: rgba(34, 211, 238, 0.3); }
+  25% { border-color: rgba(168, 85, 247, 0.3); }
+  50% { border-color: rgba(236, 72, 153, 0.3); }
+  75% { border-color: rgba(168, 85, 247, 0.3); }
+}
+
+@keyframes rotate-glow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 .animate-fade-in-scale { animation: fadeInScale 0.4s ease-out forwards; }
 .animate-slide-in-right { animation: slideInRight 0.4s ease-out forwards; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-breathe { animation: breathe 3s ease-in-out infinite; }
+.animate-float-gentle { animation: float-gentle 4s ease-in-out infinite; }
+.animate-gradient-shift { background-size: 200% 200%; animation: gradient-shift 5s ease infinite; }
+.animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-border-dance { animation: border-dance 3s linear infinite; }
+.animate-rotate-glow { animation: rotate-glow 8s linear infinite; }
 
 .stagger-1 { animation-delay: 0.1s; }
 .stagger-2 { animation-delay: 0.2s; }
@@ -314,6 +353,13 @@ body {
 
 .gradient-text {
   background: linear-gradient(135deg, #22d3ee 0%, #a855f7 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.light .gradient-text {
+  background: linear-gradient(135deg, #0891b2 0%, #9333ea 50%, #db2777 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

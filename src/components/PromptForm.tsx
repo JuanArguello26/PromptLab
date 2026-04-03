@@ -35,21 +35,24 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in-up">
+      <div className="relative group">
         <label htmlFor="prompt-description" className="block text-sm font-medium text-gray-300 mb-2">
           Descripción del prompt
         </label>
-        <textarea
-          id="prompt-description"
-          value={description}
-          onChange={handleChange}
-          placeholder={placeholder}
-          disabled={disabled}
-          aria-describedby={error ? 'description-error' : undefined}
-          aria-invalid={!!error}
-          className="w-full h-32 p-4 glass border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none resize-none disabled:opacity-50 transition-all input-glow"
-        />
+        <div className="relative">
+          <textarea
+            id="prompt-description"
+            value={description}
+            onChange={handleChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            aria-describedby={error ? 'description-error' : undefined}
+            aria-invalid={!!error}
+            className="w-full h-32 p-4 glass border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:outline-none resize-none disabled:opacity-50 transition-all input-glow"
+          />
+          <div className="absolute inset-0 rounded-xl pointer-events-none animate-border-dance opacity-0 group-focus-within:opacity-100 transition-opacity" />
+        </div>
         <div className="flex justify-between items-center mt-2">
           {error ? (
             <p id="description-error" className="text-sm text-red-400" role="alert">
@@ -65,7 +68,7 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
       <button
         type="submit"
         disabled={!description.trim() || isLoading || disabled}
-        className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 btn-primary"
+        className="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 btn-primary animate-glow-pulse"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">

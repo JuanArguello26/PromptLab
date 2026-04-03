@@ -57,17 +57,19 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
 
   return (
     <div className="space-y-4">
-      <div className="glass-card p-6 rounded-xl animate-fade-in-up">
-        <pre className="whitespace-pre-wrap text-gray-300 text-sm font-mono leading-relaxed">{prompt}</pre>
+      <div className="glass-card p-6 rounded-xl animate-fade-in-up relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <pre className="whitespace-pre-wrap text-gray-300 text-sm font-mono leading-relaxed relative z-10">{prompt}</pre>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity animate-gradient-shift" />
       </div>
       <div className="flex flex-wrap gap-3">
         <button
           onClick={handleCopy}
-          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 animate-fade-in-up stagger-1"
         >
           {copied ? (
             <>
-              <span className="text-green-400">✓</span> Copiado
+              <span className="text-green-400 animate-bounce">✓</span> Copiado
             </>
           ) : (
             <>
@@ -78,7 +80,7 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
         <button
           onClick={onRegenerate}
           disabled={isLoading}
-          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="flex-1 min-w-[120px] py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all disabled:opacity-50 flex items-center justify-center gap-2 animate-fade-in-up stagger-2"
         >
           {isLoading ? (
             <>
@@ -90,29 +92,29 @@ export default function PromptResult({ prompt, onRegenerate, isLoading, isFavori
             </>
           ) : (
             <>
-              <span>🔄</span> Regenerar
+              <span className="animate-spin-slow">🔄</span> Regenerar
             </>
           )}
         </button>
         <button
           onClick={onToggleFavorite}
-          className={`py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 hover:scale-105 ${
+          className={`py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 hover:scale-105 animate-fade-in-up stagger-3 ${
             isFavorite 
-              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' 
+              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 animate-pulse-glow' 
               : 'glass-card text-white'
           }`}
         >
-          <span className="text-lg">{isFavorite ? '⭐' : '☆'}</span>
+          <span className={`text-lg ${isFavorite ? 'animate-bounce' : ''}`}>{isFavorite ? '⭐' : '☆'}</span>
         </button>
         <button
           onClick={handleExportTxt}
-          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 animate-fade-in-up stagger-4 hover:animate-breathe"
         >
           <span>📄</span> TXT
         </button>
         <button
           onClick={handleExportPdf}
-          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
+          className="py-3 px-4 glass-card text-white rounded-xl hover:scale-105 transition-all flex items-center justify-center gap-2 animate-fade-in-up stagger-5 hover:animate-breathe"
         >
           <span>📑</span> PDF
         </button>

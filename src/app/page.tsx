@@ -246,44 +246,30 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative">
-      <div ref={bgRef} className="antigravity-bg">
+      <div ref={bgRef} className="bg-container">
         <div 
-          className="antigravity-layer layer-1"
-          style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
+          className="bg-glow bg-glow-1"
+          style={{ transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20}px)` }}
         />
         <div 
-          className="antigravity-layer layer-2"
-          style={{ transform: `translate(${mousePosition.x * -20}px, ${mousePosition.y * -20}px)` }}
-        />
-        <div className="antigravity-layer layer-3" />
-        <div className="grid-overlay" />
-        <div 
-          className="floating-particle particle-1 animate-float"
-          style={{ transform: `translate(${mousePosition.x * -40}px, ${mousePosition.y * -40}px)` }}
-        />
-        <div 
-          className="floating-particle particle-2 animate-float-delayed"
-          style={{ transform: `translate(${mousePosition.x * 30}px, ${mousePosition.y * 30}px)` }}
-        />
-        <div 
-          className="floating-particle particle-3 animate-float"
+          className="bg-glow bg-glow-2"
           style={{ transform: `translate(${mousePosition.x * -15}px, ${mousePosition.y * -15}px)` }}
         />
         <div 
-          className="floating-particle particle-4 animate-float-delayed"
-          style={{ transform: `translate(${mousePosition.x * 25}px, ${mousePosition.y * 25}px)` }}
+          className="bg-glow bg-glow-3"
+          style={{ transform: `translate(calc(-50% + ${mousePosition.x * 10}px), calc(-50% + ${mousePosition.y * 10}px))` }}
         />
+        <div className="bg-grid" />
         {mouseTrail.map((particle) => (
           <div
             key={particle.id}
-            className="mouse-trail"
+            className="bg-trail"
             style={{
-              left: particle.x,
-              top: particle.y,
+              left: particle.x - 3,
+              top: particle.y - 3,
             }}
           />
         ))}
-        <div className="hero-glow" />
       </div>
 
       <div className="relative z-10 p-4 md:p-8 max-w-4xl mx-auto">
@@ -335,19 +321,19 @@ export default function Home() {
             
             <button
               onClick={() => setShowFavorites(!showFavorites)}
-              className="glass-card p-2 hover:scale-110 transition-all header-btn"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn hover:animate-bounce"
             >
               <span className="text-lg">⭐</span>
             </button>
             <button
               onClick={handleThemeToggle}
-              className="glass-card p-2 hover:scale-110 transition-all header-btn"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn hover:animate-spin-slow"
             >
               <span className="text-lg">{theme === 'dark' ? '☀️' : '🌙'}</span>
             </button>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="glass-card p-2 hover:scale-110 transition-all header-btn"
+              className="glass-card p-2 hover:scale-110 transition-all header-btn hover:animate-breathe"
             >
               <span className="text-lg">⚙️</span>
             </button>
@@ -355,17 +341,17 @@ export default function Home() {
 
           <div className="pt-16 md:pt-8">
             <div className="logo-container mb-4">
-              <div className="logo-glow" />
-              <img src="/logo.png" alt="PromptLab" className="logo-img h-24 mx-auto" />
+              <div className="logo-glow animate-pulse-glow" />
+              <img src="/logo.png" alt="PromptLab" className="logo-img h-24 mx-auto animate-float-gentle" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2 animate-fade-in-up">
-              <span className="gradient-text">Prompt</span>Lab
+              <span className="gradient-text animate-gradient-shift bg-[length:200%_auto] bg-clip-text text-transparent">Prompt</span>Lab
             </h1>
             <p className="text-gray-400 animate-fade-in-up stagger-1">Genera prompts profesionales para IA</p>
             <div className="flex items-center justify-center gap-4 mt-4 animate-fade-in-up stagger-2">
-              <span className="text-sm text-gray-500">📊 {stats.total} generados</span>
+              <span className="text-sm text-gray-500 animate-pulse">📊 {stats.total} generados</span>
               {isPro && (
-                <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-xs font-bold text-white">
+                <span className="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-xs font-bold text-white animate-breathe">
                   PRO
                 </span>
               )}

@@ -58,15 +58,20 @@ export default function CategorySelector({ categories, selectedCategory, onSelec
             role="radio"
             aria-checked={isSelected}
             tabIndex={isSelected ? 0 : -1}
-            className={`category-card glass-card p-4 rounded-xl border transition-all duration-300 text-left ${
+            className={`category-card glass-card p-4 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group ${
               isSelected
-                ? 'selected'
-                : 'border-white/5 hover:border-white/20'
+                ? 'selected animate-glow-pulse'
+                : 'border-white/5 hover:border-white/20 hover:scale-105'
             }`}
+            style={{ animationDelay: `${index * 0.05}s` }}
           >
-            <span className="text-3xl mb-2 block" aria-hidden="true">{category.icon}</span>
-            <h3 className="font-semibold text-white mb-1">{category.name}</h3>
-            <p className="text-xs text-gray-400">{category.description}</p>
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="text-3xl mb-2 block relative z-10 group-hover:animate-bounce" aria-hidden="true">{category.icon}</span>
+            <h3 className="font-semibold text-white mb-1 relative z-10">{category.name}</h3>
+            <p className="text-xs text-gray-400 relative z-10">{category.description}</p>
+            {isSelected && (
+              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            )}
           </button>
         );
       })}
