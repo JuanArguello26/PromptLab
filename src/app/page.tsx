@@ -12,6 +12,7 @@ function throttle<T extends (...args: never[]) => void>(fn: T, delay: number): T
     }
   }) as T;
 }
+import { createClient } from '@/lib/supabase/client';
 import { categories, getCategoryById } from '@/lib/prompts';
 import { HistoryItem } from '@/types';
 import CategorySelector from '@/components/CategorySelector';
@@ -28,6 +29,7 @@ const USER_KEY = 'promptlab_user';
 const FREE_PROMPTS_LIMIT = 10;
 
 interface User {
+  id?: string;
   name: string;
   email: string;
   plan: 'free' | 'pro';
@@ -57,19 +59,59 @@ export default function Home() {
   const [isHydrated, setIsHydrated] = useState(false);
   const bgRef = useRef<HTMLDivElement>(null);
   const trailIdRef = useRef(0);
+  const supabase = createClient();
 
   useEffect(() => {
-    setIsHydrated(true);
-    setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
-    setFavorites(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
-    const savedStats = localStorage.getItem(STATS_KEY);
-    setStats(savedStats ? JSON.parse(savedStats) : { total: 0, favorites: 0 });
-    setCustomApiKey(localStorage.getItem('promptlab_custom_api_key') || '');
-    const savedTheme = localStorage.getItem('promptlab_theme');
-    setTheme((savedTheme as 'dark' | 'light') || 'dark');
-    const savedUser = localStorage.getItem(USER_KEY);
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+    const initAuth = async () => {
+      setIsHydrated(true);
+      
+      // Check Supabase session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+          email: session.user.email || '',
+          plan: 'pro',
+        });
+        localStorage.setItem(USER_KEY, JSON.stringify({
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuario',
+          email: session.user.email || '',
+          plan: 'pro',
+        }));
+      } else {
+        const savedUser = localStorage.getItem(USER_KEY);
+        if (savedUser) setUser(JSON.parse(savedUser));
+      }
+
+      setHistory(JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'));
+      setFavorites(JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'));
+      const savedStats = localStorage.getItem(STATS_KEY);
+      setStats(savedStats ? JSON.parse(savedStats) : { total: 0, favorites: 0 });
+      setCustomApiKey(localStorage.getItem('promptlab_custom_api_key') || '');
+      const savedTheme = localStorage.getItem('promptlab_theme');
+      setTheme((savedTheme as 'dark' | 'light') || 'dark');
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const userData: User = {
+          id: session.user.id,
+          name: String(session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuario'),
+          email: session.user.email || '',
+          plan: 'pro',
+        };
+        setUser(userData);
+        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   const isPro = user?.plan === 'pro';
   const remainingFree = Math.max(0, FREE_PROMPTS_LIMIT - stats.total);
@@ -165,7 +207,8 @@ export default function Home() {
     showToast(`Bienvenido${loggedUser.plan === 'pro' ? ', versión PRO activada!' : '!'}`, 'success');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem(USER_KEY);
     showToast('Sesión cerrada', 'info');
@@ -213,6 +256,16 @@ export default function Home() {
       const newStats = { ...stats, total: stats.total + 1 };
       setStats(newStats);
       localStorage.setItem(STATS_KEY, JSON.stringify(newStats));
+
+      // Guardar en Supabase si el usuario está logueado
+      if (user?.id) {
+        await supabase.from('prompts').insert({
+          user_id: user.id,
+          category: selectedCategory,
+          description,
+          prompt: data.prompt,
+        });
+      }
 
       if (!isPro && newStats.total >= FREE_PROMPTS_LIMIT - 2) {
         showToast(`Solo te quedan ${FREE_PROMPTS_LIMIT - newStats.total} prompts gratuitos`, 'info');

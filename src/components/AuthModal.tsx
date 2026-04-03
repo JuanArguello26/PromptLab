@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Provider } from '@supabase/supabase-js';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (user: { name: string; email: string; plan: 'free' | 'pro' }) => void;
+  onLogin: (user: { name: string; email: string; plan: 'free' | 'pro'; id?: string }) => void;
   isLimitReached: boolean;
   remainingFree: number;
 }
@@ -17,47 +19,106 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const supabase = createClient();
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    if (email && password) {
-      onLogin({
-        name: name || email.split('@')[0],
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        plan: 'pro'
+        password,
       });
-    } else {
-      setError('Por favor completa todos los campos');
+
+      if (signInError) throw signInError;
+
+      if (data.user) {
+        onLogin({
+          name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Usuario',
+          email: data.user.email || '',
+          plan: 'pro',
+          id: data.user.id,
+        });
+        onClose();
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
+
+  const handleEmailRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (data.user) {
+        onLogin({
+          name: name || email.split('@')[0],
+          email,
+          plan: 'pro',
+          id: data.user.id,
+        });
+        onClose();
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al registrarse';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOAuthLogin = async (provider: Provider) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      });
+
+      if (oauthError) throw oauthError;
+      
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : `Error con ${provider}`;
+      setError(errorMessage);
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => handleOAuthLogin('google');
+  
+  const handleGitHubLogin = () => handleOAuthLogin('github');
 
   const handleGuest = () => {
     onLogin({ name: 'Invitado', email: 'guest@promptlab.app', plan: 'free' });
     onClose();
-  };
-
-  const handleGoogleLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      onLogin({ name: 'Usuario Google', email: 'user@gmail.com', plan: 'pro' });
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleGitHubLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      onLogin({ name: 'Usuario GitHub', email: 'user@github.com', plan: 'pro' });
-      setIsLoading(false);
-    }, 1000);
   };
 
   const handleDemo = (plan: 'free' | 'pro') => {
@@ -69,6 +130,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
         plan
       });
       setIsLoading(false);
+      onClose();
     }, 800);
   };
 
@@ -174,11 +236,11 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-[#111118] text-gray-500">o continuar como</span>
+              <span className="px-4 bg-[#111118] text-gray-500">o continuar con email</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={mode === 'login' ? handleEmailLogin : handleEmailRegister} className="space-y-4">
             {mode === 'register' && (
               <div>
                 <input
