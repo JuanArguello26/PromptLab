@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 function throttle<T extends (...args: never[]) => void>(fn: T, delay: number): T {
