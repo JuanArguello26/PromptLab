@@ -11,20 +11,20 @@ interface AuthModalProps {
   remainingFree: number;
 }
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+function getPasswordStrength(password: string): { score: number; label: string; color: string; gradient: string } {
   let score = 0;
   
-  if (password.length >= 8) score += 1;
+  if (password.length >= 8 && password.length <= 22) score += 1;
   if (password.length >= 12) score += 1;
   if (/[A-Z]/.test(password)) score += 1;
   if (/[0-9]/.test(password)) score += 1;
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
   
-  if (score <= 1) return { score, label: 'Débil', color: 'bg-red-500' };
-  if (score <= 2) return { score, label: 'Bajo', color: 'bg-orange-500' };
-  if (score <= 3) return { score, label: 'Medio', color: 'bg-yellow-500' };
-  if (score <= 4) return { score, label: 'Fuerte', color: 'bg-green-400' };
-  return { score, label: 'Excelente', color: 'bg-green-500' };
+  if (score <= 1) return { score, label: 'Muy débil', color: '#ef4444', gradient: 'from-red-500 to-red-600' };
+  if (score <= 2) return { score, label: 'Débil', color: '#f97316', gradient: 'from-orange-500 to-orange-600' };
+  if (score <= 3) return { score, label: 'Regular', color: '#eab308', gradient: 'from-yellow-500 to-yellow-600' };
+  if (score <= 4) return { score, label: 'Buena', color: '#22c55e', gradient: 'from-green-500 to-green-600' };
+  return { score, label: 'Excelente', color: '#10b981', gradient: 'from-emerald-500 to-cyan-500' };
 }
 
 function validatePassword(password: string): { valid: boolean; errors: string[] } {
@@ -32,6 +32,9 @@ function validatePassword(password: string): { valid: boolean; errors: string[] 
   
   if (password.length < 8) {
     errors.push('Mínimo 8 caracteres');
+  }
+  if (password.length > 22) {
+    errors.push('Máximo 22 caracteres');
   }
   if (!/[A-Z]/.test(password)) {
     errors.push('Al menos 1 mayúscula');
@@ -268,8 +271,14 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
                 type={showPassword ? "text" : "password"}
                 placeholder="Contraseña"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:bg-white/10 transition-all outline-none"
+                onChange={(e) => setPassword(e.target.value.slice(0, 22))}
+                className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-500 focus:outline-none transition-all ${
+                  mode === 'register' && password 
+                    ? passwordStrength?.score && passwordStrength.score >= 3 
+                      ? 'border-green-500 focus:border-green-400' 
+                      : 'border-orange-500/50 focus:border-orange-400'
+                    : 'border-white/10 focus:border-cyan-400 focus:bg-white/10'
+                }`}
               />
               <button
                 type="button"
@@ -290,17 +299,75 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
             </div>
 
             {mode === 'register' && password && (
-              <div className="space-y-2">
-                <div className="flex gap-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className={`${passwordStrength?.color} transition-all duration-300 rounded-full`} style={{ width: `${(passwordStrength?.score || 0) * 20}%` }} />
-                  <div className="flex-1 bg-white/10 rounded-full" />
-                  <div className="flex-1 bg-white/10 rounded-full" />
-                  <div className="flex-1 bg-white/10 rounded-full" />
-                  <div className="flex-1 bg-white/10 rounded-full" />
+              <div className="space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-gray-400 font-medium">Seguridad de contraseña</span>
+                  <span 
+                    className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/10"
+                    style={{ color: passwordStrength?.color }}
+                  >
+                    {passwordStrength?.label}
+                  </span>
                 </div>
-                <p className={`text-xs ${passwordStrength?.score && passwordStrength.score >= 3 ? 'text-green-400' : 'text-gray-400'}`}>
-                  Fortaleza: {passwordStrength?.label} ({password.length}/8 caracteres)
-                </p>
+                
+                <div className="relative h-4 bg-white/10 rounded-lg overflow-hidden">
+                  <div 
+                    className={`absolute inset-y-0 left-0 rounded-lg bg-gradient-to-r ${passwordStrength?.gradient} transition-all duration-700 ease-out`}
+                    style={{ width: `${((passwordStrength?.score || 0) / 5) * 100}%` }}
+                  >
+                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center gap-1">
+                    {[1, 2, 3, 4, 5].map((level, idx) => (
+                      <div 
+                        key={level}
+                        className={`w-8 h-2 rounded transition-all duration-500 ${
+                          (passwordStrength?.score || 0) >= level 
+                            ? passwordStrength?.gradient 
+                            : 'bg-white/20'
+                        }`}
+                        style={{
+                          transform: (passwordStrength?.score || 0) >= level ? 'scaleY(1.2)' : 'scaleY(1)',
+                          animationDelay: `${idx * 100}ms`
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-gray-500">{password.length}</span>
+                  <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r ${passwordStrength?.gradient} transition-all duration-300`}
+                      style={{ width: `${Math.min(100, (password.length / 22) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-gray-500">22</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                  {[
+                    { label: '8-22 caracteres', valid: password.length >= 8 && password.length <= 22 },
+                    { label: 'Mayúscula', valid: /[A-Z]/.test(password) },
+                    { label: 'Número', valid: /[0-9]/.test(password) },
+                    { label: '12+ caracteres', valid: password.length >= 12 },
+                  ].map((req, idx) => (
+                    <div 
+                      key={idx}
+                      className={`flex items-center gap-1.5 text-xs py-1 px-2 rounded-md transition-all duration-300 ${
+                        req.valid 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-white/5 text-gray-500'
+                      }`}
+                    >
+                      <span className={`transition-transform duration-300 ${req.valid ? 'scale-110' : ''}`}>
+                        {req.valid ? '✓' : '○'}
+                      </span>
+                      <span className="font-medium">{req.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -310,8 +377,14 @@ export default function AuthModal({ isOpen, onClose, onLogin, isLimitReached, re
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirmar contraseña"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-cyan-400 focus:bg-white/10 transition-all outline-none"
+                  onChange={(e) => setConfirmPassword(e.target.value.slice(0, 22))}
+                  className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-gray-500 focus:outline-none transition-all ${
+                    confirmPassword 
+                      ? passwordsMatch 
+                        ? 'border-green-500 focus:border-green-400' 
+                        : 'border-red-500/50 focus:border-red-400'
+                      : 'border-white/10 focus:border-cyan-400 focus:bg-white/10'
+                  }`}
                 />
                 <button
                   type="button"
