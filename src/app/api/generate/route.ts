@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generatePrompt } from '@/lib/openai';
+import { generateWithProvider, AIProvider } from '@/lib/ai-providers';
 import { getCategoryById } from '@/lib/prompts';
 
 export async function POST(request: NextRequest) {
   try {
-    const { category, description, apiKey } = await request.json();
+    const { category, description, apiKey, provider = 'groq' } = await request.json();
 
     if (!category || !description) {
       return NextResponse.json(
@@ -21,15 +21,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const finalApiKey = apiKey || process.env.GROQ_API_KEY;
-    if (!finalApiKey) {
-      return NextResponse.json(
-        { error: 'API key not configured. Please add your Groq API key in settings.' },
-        { status: 401 }
-      );
-    }
-
-    const prompt = await generatePrompt(categoryData.systemPrompt, description, finalApiKey);
+    const prompt = await generateWithProvider(
+      categoryData.systemPrompt,
+      description,
+      provider as AIProvider,
+      apiKey
+    );
+    
     return NextResponse.json({ prompt });
   } catch (error) {
     console.error('Generate error:', error);

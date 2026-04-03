@@ -38,13 +38,11 @@
 .light .text-gray-400 { color: #64748b !important; }
 .light .text-gray-500 { color: #94a3b8 !important; }
 
-.light .bg-white\\/5 { background: rgba(0, 0, 0, 0.05) !important; }
-.light .bg-white\\/10 { background: rgba(0, 0, 0, 0.08) !important; }
-.light .bg-white\\/20 { background: rgba(0, 0, 0, 0.12) !important; }
-.light .border-white\\/10 { border-color: rgba(0, 0, 0, 0.1) !important; }
-.light .border-white\\/20 { border-color: rgba(0, 0, 0, 0.15) !important; }
-.light .hover\\:bg-white\\/10:hover { background: rgba(0, 0, 0, 0.08) !important; }
-.light .hover\\:bg-white\\/20:hover { background: rgba(0, 0, 0, 0.12) !important; }
+.light .bg-white-5 { background: rgba(0, 0, 0, 0.05) !important; }
+.light .bg-white-10 { background: rgba(0, 0, 0, 0.08) !important; }
+.light .bg-white-20 { background: rgba(0, 0, 0, 0.12) !important; }
+.light .border-white-10 { border-color: rgba(0, 0, 0, 0.1) !important; }
+.light .border-white-20 { border-color: rgba(0, 0, 0, 0.15) !important; }
 
 .light input::placeholder,
 .light textarea::placeholder { color: #94a3b8 !important; }

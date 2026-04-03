@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, KeyboardEvent } from 'react';
 
 interface PromptFormProps {
   onSubmit: (description: string) => void;
@@ -13,8 +13,8 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!description.trim()) {
       setError('Por favor describe qué tipo de prompt necesitas.');
       return;
@@ -25,6 +25,13 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
     }
     setError('');
     onSubmit(description);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -39,12 +46,14 @@ export default function PromptForm({ onSubmit, isLoading, disabled, placeholder 
       <div className="relative group">
         <label htmlFor="prompt-description" className="block text-sm font-medium text-gray-300 mb-2">
           Descripción del prompt
+          <span className="ml-2 text-xs text-gray-500">(Ctrl + Enter para generar)</span>
         </label>
         <div className="relative">
           <textarea
             id="prompt-description"
             value={description}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}
             aria-describedby={error ? 'description-error' : undefined}
